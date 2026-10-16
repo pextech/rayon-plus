@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rayon+ — Gikundiro, all access</title>
+<meta name="description" content="Rayon+ — the official home of Rayon Sports life. Live matches, men's and women's teams, club life and players' stories.">
+<link rel="preload" href="vendor/fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:'Anton';src:url(vendor/fonts/anton-latin-400-normal.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Inter';src:url(vendor/fonts/inter-latin-400-normal.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Inter';src:url(vendor/fonts/inter-latin-500-normal.woff2) format('woff2');font-weight:500;font-display:swap}
+:root{
+  --obsidian:#111111; --white:#ffffff; --concrete:#e5e5e5; --mist:#f5f5f5; --steel:#707072; --faint:#9e9ea0;
+  --blue:#1f4fe0; --blue-deep:#0b2a8f; --blue-ink:#071a5c;
+  --display:'Anton', 'Futura PT', Impact, sans-serif;
+  --text:'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --ease:cubic-bezier(.76,0,.24,1); --ease-out:cubic-bezier(.16,1,.3,1);
+  --gutter:clamp(16px,3vw,48px);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--white);color:var(--obsidian);font-family:var(--text);font-size:16px;line-height:1.75;font-weight:400;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body.is-loading{overflow:hidden}
+img,video{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+::selection{background:var(--blue);color:#fff}
+
+/* ---------- utilities ---------- */
+.wrap{max-width:1440px;margin:0 auto;padding:0 var(--gutter)}
+.eyebrow{font-size:12px;line-height:1.5;font-weight:500;letter-spacing:.14em;text-transform:uppercase}
+.display{font-family:var(--display);font-weight:400;line-height:.9;text-transform:uppercase;letter-spacing:-.005em}
+.line{display:block;overflow:hidden}
+.line>span{display:inline-block;will-change:transform}
+.pill{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 24px;border-radius:30px;font-weight:500;font-size:16px;line-height:1;white-space:nowrap;transition:background .3s,color .3s,transform .3s var(--ease-out)}
+.pill--blue{background:var(--blue);color:#fff}
+.pill--blue:hover{background:var(--blue-deep)}
+.pill--white{background:#fff;color:var(--obsidian)}
+.pill--white:hover{background:var(--concrete)}
+.pill--dark{background:var(--obsidian);color:#fff}
+.pill--dark:hover{background:#2a2a2a}
+.pill--ghost{border:1px solid rgba(255,255,255,.4);color:#fff}
+.pill--ghost:hover{background:#fff;color:var(--obsidian)}
+.pill svg{width:16px;height:16px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--blue);position:relative;flex:none}
+.dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1px solid var(--blue);animation:ping 1.6s var(--ease-out) infinite}
+@keyframes ping{from{transform:scale(.6);opacity:1}to{transform:scale(2);opacity:0}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- loader ---------- */
+.loader{position:fixed;inset:0;z-index:100;background:var(--obsidian);color:#fff;display:flex;flex-direction:column;justify-content:space-between;padding:var(--gutter)}
+.loader__top{display:flex;justify-content:space-between}
+.loader__word{font-family:var(--display);font-size:clamp(72px,18vw,280px);line-height:.85;display:flex;align-items:flex-end;justify-content:space-between}
+.loader__word .plus{color:var(--blue)}
+.loader__count{font-family:var(--display);font-size:clamp(48px,8vw,120px);line-height:1;font-variant-numeric:tabular-nums}
+.loader__bar{position:absolute;left:0;bottom:0;height:4px;width:0;background:var(--blue)}
+.loader__wipe{position:fixed;inset:0;z-index:99;background:var(--blue);transform:translateY(100%)}
+
+/* ---------- cursor ---------- */
+.cursor{position:fixed;left:0;top:0;z-index:90;pointer-events:none;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--blue);display:grid;place-items:center;transition:width .35s var(--ease-out),height .35s var(--ease-out),margin .35s var(--ease-out),background .3s}
+.cursor span{font-size:11px;font-weight:500;letter-spacing:.12em;color:#fff;opacity:0;transition:opacity .2s}
+.cursor.is-big{width:88px;height:88px;margin:-44px 0 0 -44px}
+.cursor.is-big span{opacity:1}
+@media (hover:none),(pointer:coarse){.cursor{display:none}}
+
+/* ---------- nav ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:50;color:#fff;transition:transform .5s var(--ease),color .3s}
+.nav__bar{max-width:1440px;margin:0 auto;padding:20px var(--gutter);display:flex;align-items:center;justify-content:space-between;gap:24px}
+.nav.is-hidden{transform:translateY(-110%)}
+.nav.is-solid{color:var(--obsidian)}
+.nav.is-solid::before{opacity:1}
+.nav::before{content:"";position:absolute;inset:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);opacity:0;transition:opacity .3s;border-bottom:1px solid var(--concrete);z-index:-1}
+.logo{font-family:var(--display);font-size:28px;line-height:1;letter-spacing:.01em;display:flex;align-items:baseline}
+.logo b{font-weight:400;color:var(--blue)}
+.nav__links{display:flex;gap:28px;font-weight:500;font-size:16px}
+.nav__links a{position:relative;padding:4px 0}
+.nav__links a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:currentColor;transform:scaleX(0);transform-origin:right;transition:transform .4s var(--ease)}
+.nav__links a:hover::after{transform:scaleX(1);transform-origin:left}
+.nav__right{display:flex;align-items:center;gap:12px}
+.nav__live{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:0 16px;height:40px;border-radius:24px;background:rgba(255,255,255,.12)}
+.nav.is-solid .nav__live{background:var(--mist)}
+.nav .pill{height:40px;padding:0 18px;font-size:14px}
+.burger{display:none;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);place-items:center}
+.nav.is-solid .burger{background:var(--mist)}
+.burger i{display:block;width:16px;height:1.5px;background:currentColor;box-shadow:0 5px 0 currentColor,0 -5px 0 currentColor}
+.menu{position:fixed;inset:0;z-index:49;background:var(--obsidian);color:#fff;padding:96px var(--gutter) var(--gutter);display:flex;flex-direction:column;justify-content:space-between;clip-path:inset(0 0 100% 0);transition:clip-path .7s var(--ease)}
+.menu.is-open{clip-path:inset(0 0 0 0)}
+.menu a.big{font-family:var(--display);font-size:clamp(48px,14vw,96px);line-height:1;text-transform:uppercase;display:block}
+.menu a.big:hover{color:var(--blue)}
+
+/* ---------- hero ---------- */
+.hero{position:relative;height:100svh;min-height:620px;background:var(--obsidian);color:#fff;overflow:hidden}
+.hero__cols{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr)}
+.hero__col{position:relative;overflow:hidden;clip-path:inset(100% 0 0 0)}
+.hero__col video{position:absolute;inset:-8% 0;width:100%;height:116%;object-fit:cover}
+.hero__col+.hero__col{border-left:1px solid rgba(255,255,255,.08)}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(17,17,17,.55) 0%,rgba(17,17,17,0) 28%,rgba(17,17,17,0) 45%,rgba(7,26,92,.55) 75%,rgba(17,17,17,.95) 100%);pointer-events:none}
+.hero__content{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:0 var(--gutter) clamp(24px,4vw,48px)}
+.hero__title{font-size:clamp(64px,24vw,420px);white-space:nowrap;width:max-content}
+.hero__row{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-top:clamp(12px,2vw,24px);flex-wrap:wrap}
+.hero__sub{max-width:440px;font-size:16px;line-height:1.6;color:rgba(255,255,255,.82)}
+.hero__ctas{display:flex;gap:12px;flex-wrap:wrap}
+.hero__meta{position:absolute;z-index:2;top:clamp(96px,13vh,128px);right:var(--gutter);display:flex;flex-direction:column;gap:12px;align-items:flex-end}
+.hero__tag{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;padding:8px 14px;border-radius:30px;background:rgba(17,17,17,.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14)}
+.scrollcue{position:absolute;z-index:2;left:var(--gutter);top:clamp(96px,13vh,128px);font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;display:flex;align-items:center;gap:10px;opacity:.85}
+.scrollcue i{display:block;width:1px;height:28px;background:rgba(255,255,255,.3);position:relative;overflow:hidden}
+.scrollcue i::after{content:"";position:absolute;left:0;top:-100%;width:1px;height:100%;background:#fff;animation:cue 1.8s var(--ease) infinite}
+@keyframes cue{to{top:100%}}
+
+/* ---------- marquee ---------- */
+.marquee{background:var(--blue);color:#fff;overflow:hidden;padding:18px 0;white-space:nowrap}
+.marquee__track{display:inline-flex;gap:40px;animation:marq 32s linear infinite;font-family:var(--display);font-size:clamp(28px,4vw,56px);line-height:1;text-transform:uppercase}
+.marquee__track span{display:inline-flex;align-items:center;gap:40px}
+.marquee__track span::after{content:"";width:.32em;height:.32em;background:#fff;border-radius:50%}
+@keyframes marq{to{transform:translateX(-50%)}}
+
+/* ---------- manifesto ---------- */
+.manifesto{padding:clamp(96px,14vw,200px) 0}
+.manifesto__grid{display:grid;grid-template-columns:240px 1fr;gap:48px}
+.manifesto__text{font-family:var(--text);font-weight:500;font-size:clamp(28px,4.2vw,64px);line-height:1.08;letter-spacing:-.02em}
+.manifesto__text .w{color:var(--concrete);transition:color .2s}
+.manifesto__text .w.is-on{color:var(--obsidian)}
+.manifesto__text .w.blue.is-on{color:var(--blue)}
+.manifesto__aside{display:flex;flex-direction:column;justify-content:space-between;gap:24px;color:var(--steel);font-size:14px;line-height:1.6}
+
+/* ---------- teams (men / women) ---------- */
+.teams{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#fff}
+.tile{position:relative;height:clamp(520px,92vh,920px);overflow:hidden;color:#fff;display:block}
+.tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.15);transition:transform 1.4s var(--ease-out)}
+.tile:hover img{transform:scale(1.06)!important}
+.tile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.75) 100%)}
+.tile__body{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:clamp(20px,3vw,40px)}
+.tile__num{position:absolute;z-index:2;top:clamp(20px,3vw,40px);left:clamp(20px,3vw,40px);font-size:12px;letter-spacing:.14em;font-weight:500}
+.tile h3{font-size:clamp(56px,7vw,112px);margin:8px 0 16px}
+.tile p{max-width:380px;color:rgba(255,255,255,.85);margin-bottom:20px}
+.tile .ctas{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- live ---------- */
+.live{background:var(--obsidian);color:#fff;padding:clamp(96px,12vw,160px) 0;overflow:hidden}
+.live__grid{display:grid;grid-template-columns:5fr 7fr;gap:clamp(32px,5vw,80px);align-items:center}
+.live h2{font-size:clamp(64px,8.4vw,140px)}
+.live h2 em{font-style:normal;color:var(--blue)}
+.live__lead{color:rgba(255,255,255,.72);max-width:440px;margin:24px 0 36px}
+.feat{border-top:1px solid rgba(255,255,255,.14)}
+.feat li{list-style:none;display:grid;grid-template-columns:48px 1fr;gap:12px;padding:18px 0;border-bottom:1px solid rgba(255,255,255,.14)}
+.feat b{font-weight:500;display:block;font-size:16px;line-height:1.5}
+.feat span{color:rgba(255,255,255,.6);font-size:14px;line-height:1.6}
+.feat .n{font-size:12px;color:var(--blue);font-weight:500;letter-spacing:.1em;padding-top:4px}
+.player{position:relative;aspect-ratio:16/10;background:#000;overflow:hidden;border-radius:4px}
+.player__video{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr}
+.player__video video{width:100%;height:100%;object-fit:cover}
+.player__video video:last-child{transform:scaleX(-1);filter:brightness(.9)}
+.player__shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,0) 30%,rgba(0,0,0,0) 60%,rgba(0,0,0,.8))}
+.player__top{position:absolute;top:16px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 12px;border-radius:30px;font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;background:rgba(17,17,17,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.chip--blue{background:var(--blue)}
+.score{display:flex;align-items:center;gap:0;font-weight:500;font-size:14px;border-radius:30px;overflow:hidden;background:rgba(17,17,17,.7);backdrop-filter:blur(8px)}
+.score span{padding:6px 12px}
+.score .s{background:#fff;color:var(--obsidian);font-variant-numeric:tabular-nums}
+.score .t{color:rgba(255,255,255,.7);font-variant-numeric:tabular-nums}
+.player__chat{position:absolute;right:16px;bottom:76px;width:min(240px,42%);display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.msg{font-size:12px;line-height:1.4;padding:8px 12px;border-radius:14px;background:rgba(17,17,17,.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:msgIn .5s var(--ease-out) both}
+.msg b{font-weight:500;color:#9db4ff;margin-right:6px}
+@keyframes msgIn{from{opacity:0;transform:translateY(12px)}}
+.player__bottom{position:absolute;left:16px;right:16px;bottom:16px;display:flex;align-items:center;gap:12px}
+.player__bottom .ctrl{width:36px;height:36px;border-radius:50%;background:#fff;color:var(--obsidian);display:grid;place-items:center;flex:none}
+.progress{flex:1;height:3px;background:rgba(255,255,255,.25);border-radius:3px;position:relative}
+.progress i{position:absolute;left:0;top:0;bottom:0;width:74%;background:var(--blue);border-radius:3px}
+.progress i::after{content:"";position:absolute;right:-5px;top:-4px;width:11px;height:11px;border-radius:50%;background:#fff}
+.cams{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.cams button{height:36px;padding:0 16px;border-radius:30px;font-size:14px;font-weight:500;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);transition:all .25s}
+.cams button.is-on,.cams button:hover{background:#fff;color:var(--obsidian);border-color:#fff}
+.viewers{margin-top:16px;display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.6);font-size:14px}
+.viewers b{color:#fff;font-weight:500;font-variant-numeric:tabular-nums}
+
+/* ---------- chapters (horizontal) ---------- */
+.life{background:#fff;overflow:hidden}
+.life__head{padding:clamp(96px,10vw,140px) 0 48px;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.life__head h2{font-size:clamp(64px,9vw,150px)}
+.life__head p{max-width:360px;color:var(--steel)}
+.life__pin{height:100vh;display:flex;align-items:center}
+.life__track{display:flex;gap:clamp(12px,1.6vw,24px);padding:0 var(--gutter);will-change:transform}
+.chapter{position:relative;flex:none;width:clamp(260px,26vw,400px);aspect-ratio:9/15;overflow:hidden;background:var(--mist);color:#fff}
+.chapter video,.chapter img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 1s var(--ease-out)}
+.chapter:hover video{transform:scale(1.05)}
+.chapter::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,0) 30%,rgba(0,0,0,0) 55%,rgba(0,0,0,.8))}
+.chapter__n{position:absolute;z-index:2;top:16px;left:16px;font-size:12px;font-weight:500;letter-spacing:.14em}
+.chapter__b{position:absolute;z-index:2;left:16px;right:16px;bottom:16px}
+.chapter__b h3{font-family:var(--display);font-weight:400;font-size:clamp(36px,3.4vw,52px);line-height:.95;text-transform:uppercase}
+.chapter__b p{font-size:14px;line-height:1.5;color:rgba(255,255,255,.82);margin-top:8px}
+.chapter--intro{background:var(--blue);display:flex;flex-direction:column;justify-content:space-between;padding:24px}
+.chapter--intro::after{display:none}
+.chapter--intro h3{font-family:var(--display);font-weight:400;font-size:clamp(44px,4.4vw,72px);line-height:.92;text-transform:uppercase}
+.chapter--end{background:var(--obsidian);display:flex;flex-direction:column;justify-content:flex-end;gap:16px;padding:24px}
+.chapter--end::after{display:none}
+.life__progress{position:absolute;left:var(--gutter);right:var(--gutter);bottom:32px;height:1px;background:var(--concrete)}
+.life__progress i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--obsidian)}
+
+/* ---------- numbers ---------- */
+.numbers{border-top:1px solid var(--concrete);border-bottom:1px solid var(--concrete)}
+.numbers__grid{display:grid;grid-template-columns:repeat(4,1fr)}
+.num{padding:clamp(32px,4vw,56px) var(--gutter);border-left:1px solid var(--concrete)}
+.num:first-child{border-left:0}
+.num b{display:block;font-family:var(--display);font-weight:400;font-size:clamp(56px,6vw,96px);line-height:1;font-variant-numeric:tabular-nums}
+.num b sup{font-size:.45em;color:var(--blue);vertical-align:top;margin-left:4px}
+.num span{color:var(--steel);font-size:14px}
+
+/* ---------- champions ---------- */
+.champs{padding:clamp(96px,12vw,180px) 0;position:relative;overflow:hidden}
+.champs__grid{display:grid;grid-template-columns:7fr 5fr;gap:clamp(32px,5vw,80px);align-items:center}
+.champs h2{font-size:clamp(80px,13vw,220px);line-height:.82}
+.champs h2 .o{-webkit-text-stroke:2px var(--obsidian);color:transparent}
+.champs h2 .b{color:var(--blue)}
+.champs__img{position:relative;aspect-ratio:631/486;overflow:hidden}
+.champs__img img{width:100%;height:100%;object-fit:cover;transform:scale(1.2)}
+.champs__cap{display:flex;justify-content:space-between;gap:16px;margin-top:12px;font-size:14px;color:var(--steel)}
+.champs__copy{max-width:480px;margin-top:32px;color:var(--steel)}
+
+/* ---------- family ---------- */
+.family{position:relative;height:clamp(560px,110vh,1100px);overflow:hidden;color:#fff;background:var(--obsidian)}
+.family img{position:absolute;left:0;top:-15%;width:100%;height:130%;object-fit:cover}
+.family::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(17,17,17,.85) 0%,rgba(17,17,17,.1) 35%,rgba(17,17,17,.1) 65%,rgba(17,17,17,.85) 100%)}
+.family__top{position:absolute;z-index:2;top:clamp(48px,8vw,96px);left:0;right:0}
+.family__top h2{font-size:clamp(56px,9vw,150px);text-align:center}
+.family__bottom{position:absolute;z-index:2;bottom:clamp(24px,4vw,48px);left:0;right:0}
+.family__bottom .wrap{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.family__bottom p{max-width:420px;color:rgba(255,255,255,.82)}
+
+/* ---------- plans ---------- */
+.plans{padding:clamp(96px,12vw,160px) 0;background:var(--mist)}
+.plans__head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:48px;flex-wrap:wrap}
+.plans__head h2{font-size:clamp(56px,8vw,128px)}
+.plans__head p{max-width:380px;color:var(--steel)}
+.plans__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.plan{background:#fff;padding:clamp(24px,3vw,40px);display:flex;flex-direction:column;min-height:540px;position:relative;transition:transform .5s var(--ease-out)}
+.plan:hover{transform:translateY(-6px)}
+.plan h3{font-family:var(--text);font-weight:500;font-size:24px;line-height:1.2}
+.plan .price{font-family:var(--display);font-size:clamp(56px,5vw,80px);line-height:1;margin:32px 0 4px}
+.plan .price small{font-family:var(--text);font-size:14px;color:var(--steel);margin-left:6px}
+.plan .per{color:var(--steel);font-size:14px}
+.plan ul{list-style:none;margin:32px 0;display:flex;flex-direction:column;gap:12px;flex:1}
+.plan li{display:flex;gap:12px;font-size:16px;line-height:1.5}
+.plan li::before{content:"";flex:none;width:16px;height:16px;margin-top:4px;border-radius:50%;background:var(--obsidian) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 8.2l2.2 2.2 4.8-4.8' fill='none' stroke='%23fff' stroke-width='1.6'/%3E%3C/svg%3E") center/16px no-repeat}
+.plan .pill{justify-content:center}
+.plan--hot{background:var(--blue);color:#fff}
+.plan--hot .per,.plan--hot .price small{color:rgba(255,255,255,.75)}
+.plan--hot li::before{background-color:#fff;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 8.2l2.2 2.2 4.8-4.8' fill='none' stroke='%231f4fe0' stroke-width='1.6'/%3E%3C/svg%3E")}
+.badge{position:absolute;top:clamp(24px,3vw,40px);right:clamp(24px,3vw,40px);font-size:12px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:6px 12px;border-radius:30px;background:#fff;color:var(--blue)}
+
+/* ---------- join ---------- */
+.join{position:relative;background:var(--obsidian);color:#fff;padding:clamp(120px,14vw,220px) 0 clamp(64px,8vw,120px);overflow:hidden}
+.join__bg{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);opacity:.28}
+.join__bg video{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.1)}
+.join::before{content:"";position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 50% 60%,rgba(31,79,224,.55),rgba(17,17,17,.92) 65%)}
+.join .wrap{position:relative;z-index:2;text-align:center}
+.join h2{font-size:clamp(84px,16vw,260px);line-height:.84}
+.join p{max-width:520px;margin:28px auto 36px;color:rgba(255,255,255,.8)}
+.form{display:flex;gap:8px;max-width:560px;margin:0 auto;background:#fff;border-radius:40px;padding:6px}
+.form input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:16px;padding:0 20px;color:var(--obsidian)}
+.form input::placeholder{color:var(--steel)}
+.form .pill{height:48px}
+.form.is-done{background:var(--blue)}
+.form.is-done input{color:#fff}
+.join__small{margin-top:20px;font-size:12px;color:rgba(255,255,255,.55)}
+.stores{display:flex;justify-content:center;gap:8px;margin-top:40px;flex-wrap:wrap}
+.store{display:flex;align-items:center;gap:10px;height:52px;padding:0 20px;border-radius:30px;border:1px solid rgba(255,255,255,.25);font-size:14px;line-height:1.2;text-align:left;transition:background .3s,color .3s}
+.store:hover{background:#fff;color:var(--obsidian)}
+.store small{display:block;font-size:11px;opacity:.7}
+.store svg{width:22px;height:22px}
+
+/* ---------- footer ---------- */
+.foot{padding:64px 0 32px;background:#fff}
+.foot__grid{display:grid;grid-template-columns:2fr repeat(3,1fr);gap:32px}
+.foot h4{font-weight:500;font-size:16px;margin-bottom:16px}
+.foot ul{list-style:none;display:flex;flex-direction:column;gap:12px}
+.foot li a{color:var(--steel);font-size:14px;transition:color .2s}
+.foot li a:hover{color:var(--obsidian)}
+.foot__big{font-family:var(--display);font-size:clamp(80px,24vw,380px);line-height:.8;margin-top:64px;display:flex;justify-content:flex-start;white-space:nowrap;width:max-content;color:var(--obsidian)}
+.foot__big b{font-weight:400;color:var(--blue)}
+.foot__legal{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid var(--concrete);margin-top:24px;padding-top:20px;font-size:12px;color:var(--steel)}
+
+/* ---------- responsive ---------- */
+@media (max-width:1024px){
+  .nav__links{display:none}
+  .burger{display:grid}
+  .live__grid,.champs__grid{grid-template-columns:1fr}
+  .manifesto__grid{grid-template-columns:1fr}
+  .manifesto__aside{flex-direction:row;flex-wrap:wrap}
+  .plans__grid{grid-template-columns:1fr}
+  .plan{min-height:0}
+  .foot__grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:760px){
+  .hero__cols{grid-template-columns:1fr}
+  .hero__col:not(:first-child){display:none}
+  .hero__meta{display:none}
+  .hero__sub{font-size:14px}
+  .nav__live,.nav .pill--blue{display:none}
+  .teams{grid-template-columns:1fr}
+  .tile{height:82svh}
+  .numbers__grid{grid-template-columns:1fr 1fr}
+  .num:nth-child(3){border-left:0}
+  .num:nth-child(n+3){border-top:1px solid var(--concrete)}
+  .life__pin{height:auto;display:block;padding-bottom:64px}
+  .life__track{overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .life__track::-webkit-scrollbar{display:none}
+  .chapter{width:76vw;scroll-snap-align:center}
+  .life__progress{display:none}
+  .player__chat{display:none}
+  .form{flex-direction:column;border-radius:28px;padding:8px}
+  .form input{height:48px}
+  .form .pill{justify-content:center}
+  .join__bg{grid-template-columns:1fr 1fr}
+  .foot__grid{grid-template-columns:1fr 1fr}
+  .foot__grid>div:first-child{grid-column:1/-1}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .hero__col{clip-path:none}
+}
+</style>
+</head>
+<body class="is-loading">
+
+<!-- Loader -->
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader__top eyebrow"><span>Rayon Sports · Official</span><span>Kigali, Rwanda</span></div>
+  <div class="loader__word"><span>RAYON<span class="plus">+</span></span><span class="loader__count" id="count">0</span></div>
+  <div class="loader__bar" id="bar"></div>
+</div>
+<div class="loader__wipe" id="wipe"></div>
+
+<div class="cursor" id="cursor"><span id="cursorLabel"></span></div>
+
+<!-- Nav -->
+<header class="nav" id="nav">
+  <div class="nav__bar">
+    <a href="#top" class="logo" aria-label="Rayon+ home">RAYON<b>+</b></a>
+    <nav class="nav__links" aria-label="Primary">
+      <a href="#teams">Men</a>
+      <a href="#teams">Women</a>
+      <a href="#live">Live</a>
+      <a href="#life">Club Life</a>
+      <a href="#plans">Membership</a>
+    </nav>
+    <div class="nav__right">
+      <a href="#live" class="nav__live"><span class="dot"></span>Live</a>
+      <a href="#join" class="pill pill--blue">Join Rayon+</a>
+      <button class="burger" id="burger" aria-label="Open menu"><i></i></button>
+    </div>
+  </div>
+</header>
+<div class="menu" id="menu">
+  <div>
+    <a class="big" href="#teams">Men</a>
+    <a class="big" href="#teams">Women</a>
+    <a class="big" href="#live">Live</a>
+    <a class="big" href="#life">Club Life</a>
+    <a class="big" href="#plans">Membership</a>
+  </div>
+  <a href="#join" class="pill pill--blue" style="align-self:flex-start">Join Rayon+</a>
+</div>
+
+<main id="top">
+
+<!-- Hero -->
+<section class="hero" id="hero">
+  <div class="hero__cols">
+    <div class="hero__col" data-speed="-6"><video src="media/hero-celebrate.mp4" poster="media/hero-celebrate.jpg" muted loop playsinline autoplay preload="auto"></video></div>
+    <div class="hero__col" data-speed="4"><video src="media/hero-players.mp4" poster="media/hero-players.jpg" muted loop playsinline autoplay preload="auto"></video></div>
+    <div class="hero__col" data-speed="-3"><video src="media/hero-fans.mp4" poster="media/hero-fans.jpg" muted loop playsinline autoplay preload="auto"></video></div>
+  </div>
+
+  <div class="scrollcue"><i></i>Scroll to explore</div>
+
+  <div class="hero__meta">
+    <span class="hero__tag">Men · Women</span>
+    <span class="hero__tag">Live every matchday</span>
+    <span class="hero__tag">Since 1968</span>
+  </div>
+
+  <div class="hero__content">
+    <p class="eyebrow hero__eyebrow" style="margin-bottom:8px"><span class="line"><span>Rayon Sports Football Club — all access</span></span></p>
+    <h1 class="display hero__title" data-fit="460"><span class="line"><span>Gikundiro</span></span></h1>
+    <div class="hero__row">
+      <p class="hero__sub">The matches, the dressing room, the stands and the life in between. Every side of the Blues — men and women — streamed live and told from the inside.</p>
+      <div class="hero__ctas">
+        <a href="#join" class="pill pill--blue magnetic">Join Rayon+ <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+        <a href="#live" class="pill pill--ghost magnetic"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2.5v11l9-5.5z"/></svg>Watch live</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Marquee -->
+<!-- <div class="marquee" aria-hidden="true">
+  <div class="marquee__track">
+    <span>Gikundiro</span><span>Live matches</span><span>Men's first team</span><span>Women in blue</span><span>Behind the scenes</span><span>Matchday</span>
+    <span>Gikundiro</span><span>Live matches</span><span>Men's first team</span><span>Women in blue</span><span>Behind the scenes</span><span>Matchday</span>
+  </div>
+</div> -->
+
+<!-- Manifesto -->
+<section class="manifesto">
+  <div class="wrap manifesto__grid">
+    <aside class="manifesto__aside">
+      <span class="eyebrow" style="color:var(--obsidian)">01 — The club</span>
+      <span>Murakaza neza.<br>Welcome.</span>
+    </aside>
+    <p class="manifesto__text" id="manifesto">More than a club. A nation dressed in <span class="blue">blue.</span> Every goal, every tear, every training session and every trophy night — now in your pocket. This is <span class="blue">Rayon+.</span></p>
+  </div>
+</section>
+
+<!-- Teams -->
+<section class="teams" id="teams">
+  <a href="#join" class="tile">
+    <img src="media/men.jpg" alt="Rayon Sports men's team celebrating a goal" loading="lazy">
+    <span class="tile__num">02 — MEN</span>
+    <div class="tile__body">
+      <span class="eyebrow">Men's first team</span>
+      <h3 class="display">Built on<br>blue</h3>
+      <p>Pre-match tunnels, post-match dressing rooms and full replays of every league and cup game.</p>
+      <div class="ctas"><span class="pill pill--white">Follow the men</span></div>
+    </div>
+  </a>
+  <a href="#join" class="tile">
+    <img src="media/women.jpg" alt="Women wearing Rayon Sports jerseys on the pitch" loading="lazy">
+    <span class="tile__num">03 — WOMEN</span>
+    <div class="tile__body">
+      <span class="eyebrow">Women in blue</span>
+      <h3 class="display">Her game.<br>Our badge.</h3>
+      <p>The women's side, the players' stories and the culture that wears the jersey every single day.</p>
+      <div class="ctas"><span class="pill pill--white">Follow the women</span></div>
+    </div>
+  </a>
+</section>
+
+<!-- Live -->
+<section class="live" id="live">
+  <div class="wrap live__grid">
+    <div>
+      <span class="eyebrow" style="display:flex;align-items:center;gap:10px"><span class="dot"></span>04 — Live streaming</span>
+      <h2 class="display" style="margin-top:20px"><span class="line"><span>Every</span></span><span class="line"><span>match.</span></span><span class="line"><span><em>Live.</em></span></span></h2>
+      <p class="live__lead">From the first whistle to the final celebration, watch the Blues live in HD on your phone, laptop or TV — wherever you are in Rwanda or the world.</p>
+      <ul class="feat">
+        <li><span class="n">01</span><div><b>Full matches, live & on demand</b><span>Men's and women's fixtures, with replays and extended highlights.</span></div></li>
+        <li><span class="n">02</span><div><b>Multi-cam matchday</b><span>Switch between the main feed, the tactical cam and the bench.</span></div></li>
+        <li><span class="n">03</span><div><b>Live fan chat</b><span>Sing along with thousands of Gikundiro fans in real time.</span></div></li>
+      </ul>
+    </div>
+    <div>
+      <div class="player" data-cursor="LIVE">
+        <div class="player__video">
+          <video src="media/live-match.mp4" poster="media/live-match.jpg" muted loop playsinline preload="metadata" class="lazyv"></video>
+          <video src="media/life-stadium.mp4" poster="media/life-stadium.jpg" muted loop playsinline preload="metadata" class="lazyv"></video>
+        </div>
+        <div class="player__shade"></div>
+        <div class="player__top">
+          <span class="chip chip--blue"><span class="dot" style="background:#fff"></span>Live</span>
+          <div class="score"><span>RAYON</span><span class="s" id="score">1 – 0</span><span class="t" id="clock">67'</span></div>
+        </div>
+        <div class="player__chat" id="chat" aria-hidden="true"></div>
+        <div class="player__bottom">
+          <span class="ctrl"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2.5" width="3.5" height="11"/><rect x="9.5" y="2.5" width="3.5" height="11"/></svg></span>
+          <div class="progress"><i id="prog"></i></div>
+          <span class="chip">HD</span>
+        </div>
+      </div>
+      <div class="cams" id="cams">
+        <button class="is-on">Main feed</button><button>Tactical cam</button><button>Bench cam</button><button>Fan zone</button>
+      </div>
+      <div class="viewers"><span class="dot"></span><span><b id="viewers">48,210</b> fans watching now</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Club life (horizontal) -->
+<section class="life" id="life">
+  <div class="wrap life__head">
+    <h2 class="display"><span class="line"><span>Club life</span></span></h2>
+    <p>Five chapters of what it means to live Rayon Sports — on the pitch, in the stands and far beyond the ninety minutes.</p>
+  </div>
+  <div class="life__pin" id="lifePin">
+    <div class="life__track" id="lifeTrack">
+      <div class="chapter chapter--intro">
+        <span class="eyebrow">Select your chapter</span>
+        <h3>Life<br>in<br>blue</h3>
+        <span class="eyebrow">Swipe →</span>
+      </div>
+      <article class="chapter">
+        <video src="media/life-stadium.mp4" poster="media/life-stadium.jpg" muted loop playsinline preload="none" class="lazyv"></video>
+        <span class="chapter__n">01</span>
+        <div class="chapter__b"><h3>Matchday</h3><p>Floodlights on. Fifty thousand voices. The walk out.</p></div>
+      </article>
+      <article class="chapter">
+        <video src="media/life-squad.mp4" poster="media/life-squad.jpg" muted loop playsinline preload="none" class="lazyv"></video>
+        <span class="chapter__n">02</span>
+        <div class="chapter__b"><h3>The squad</h3><p>Inside the circle — the bond that wins games.</p></div>
+      </article>
+      <article class="chapter">
+        <video src="media/life-fans.mp4" poster="media/life-fans.jpg" muted loop playsinline preload="none" class="lazyv"></video>
+        <span class="chapter__n">03</span>
+        <div class="chapter__b"><h3>The stands</h3><p>Painted faces, drums, flags. The twelfth player.</p></div>
+      </article>
+      <article class="chapter">
+        <video src="media/life-trophy.mp4" poster="media/life-trophy.jpg" muted loop playsinline preload="none" class="lazyv"></video>
+        <span class="chapter__n">04</span>
+        <div class="chapter__b"><h3>Glory nights</h3><p>Trophies, medals and the moments that last forever.</p></div>
+      </article>
+      <article class="chapter">
+        <video src="media/hero-players.mp4" poster="media/hero-players.jpg" muted loop playsinline preload="none" class="lazyv"></video>
+        <span class="chapter__n">05</span>
+        <div class="chapter__b"><h3>Players' life</h3><p>Who they are when the cameras usually stop rolling.</p></div>
+      </article>
+      <div class="chapter chapter--end">
+        <span class="eyebrow">Unlock every chapter</span>
+        <h3 class="display" style="font-size:clamp(40px,3.6vw,56px);line-height:.95">Go behind<br>the badge.</h3>
+        <a href="#join" class="pill pill--blue" style="align-self:flex-start">Join Rayon+</a>
+      </div>
+    </div>
+    <div class="life__progress"><i id="lifeProg"></i></div>
+  </div>
+</section>
+
+<!-- Numbers -->
+<section class="numbers">
+  <div class="numbers__grid">
+    <div class="num"><b><span data-count="1968">1968</span></b><span>Founded. Decades of blue.</span></div>
+    <div class="num"><b><span data-count="2">2</span></b><span>Teams. Men &amp; women, one badge.</span></div>
+    <div class="num"><b><span data-count="90">90</span><sup>'</sup></b><span>Every minute, streamed live.</span></div>
+    <div class="num"><b><span data-count="24">24</span><sup>/7</sup></b><span>Club life, on demand.</span></div>
+  </div>
+</section>
+
+<!-- Champions -->
+<section class="champs">
+  <div class="wrap champs__grid">
+    <div>
+      <span class="eyebrow">05 — Glory</span>
+      <h2 class="display" style="margin-top:20px"><span class="line"><span>Cham</span></span><span class="line"><span class="b">pions</span></span><span class="line"><span class="o">2026</span></span></h2>
+      <p class="champs__copy">Relive the CECAFA Kagame Cup run — every goal, every save and the night the trophy came home to the Blues. Full documentary, exclusively on Rayon+.</p>
+      <a href="#join" class="pill pill--dark magnetic" style="margin-top:28px">Watch the story</a>
+    </div>
+    <div>
+      <div class="champs__img"><img src="media/champions.jpg" alt="Rayon Sports lifting the CECAFA Kagame Cup 2026" loading="lazy" id="champImg"></div>
+      <div class="champs__cap"><span>CECAFA Kagame Cup 2026</span><span>Champions</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Family -->
+<section class="family">
+  <img src="media/squad-team.jpg" alt="Rayon Sports squad and staff celebrating with medals" loading="lazy" id="familyImg">
+  <div class="family__top"><h2 class="display"><span class="line"><span>One family.</span></span><span class="line"><span>One colour.</span></span></h2></div>
+  <div class="family__bottom">
+    <div class="wrap">
+      <p>Players, staff, legends and millions of supporters. Rayon+ is where the whole Gikundiro family comes together.</p>
+      <a href="#plans" class="pill pill--white magnetic">See membership</a>
+    </div>
+  </div>
+</section>
+
+<!-- Plans -->
+<section class="plans" id="plans">
+  <div class="wrap">
+    <div class="plans__head">
+      <h2 class="display"><span class="line"><span>Pick your</span></span><span class="line"><span>seat.</span></span></h2>
+      <p>Start free and upgrade when you're ready. Cancel anytime. Pay with Mobile Money or card.</p>
+    </div>
+    <div class="plans__grid">
+      <div class="plan">
+        <h3>Supporter</h3>
+        <div class="price">Free</div>
+        <div class="per">Forever</div>
+        <ul><li>Match highlights</li><li>Club news &amp; line-ups</li><li>Fixtures and results</li><li>Matchday notifications</li></ul>
+        <a href="#join" class="pill pill--dark">Create free account</a>
+      </div>
+      <div class="plan plan--hot">
+        <span class="badge">Most popular</span>
+        <h3>Rayon+</h3>
+        <div class="price">3,000<small>RWF</small></div>
+        <div class="per">per month</div>
+        <ul><li>Every match live in HD</li><li>Men's &amp; women's games</li><li>Full replays on demand</li><li>Behind-the-scenes series</li><li>Live fan chat</li></ul>
+        <a href="#join" class="pill pill--white">Start watching</a>
+      </div>
+      <div class="plan">
+        <h3>Season Pass</h3>
+        <div class="price">30,000<small>RWF</small></div>
+        <div class="per">per season · 2 months free</div>
+        <ul><li>Everything in Rayon+</li><li>Exclusive documentaries</li><li>Multi-cam matchday</li><li>Early ticket access</li><li>Members-only drops</li></ul>
+        <a href="#join" class="pill pill--dark">Get the season pass</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Join -->
+<section class="join" id="join">
+  <div class="join__bg" aria-hidden="true">
+    <video src="media/life-fans.mp4" muted loop playsinline preload="none" class="lazyv"></video>
+    <video src="media/hero-celebrate.mp4" muted loop playsinline preload="none" class="lazyv"></video>
+    <video src="media/life-trophy.mp4" muted loop playsinline preload="none" class="lazyv"></video>
+    <video src="media/hero-fans.mp4" muted loop playsinline preload="none" class="lazyv"></video>
+  </div>
+  <div class="wrap">
+    <span class="eyebrow">Free to join · 30 seconds</span>
+    <h2 class="display" style="margin-top:20px"><span class="line"><span>Join the</span></span><span class="line"><span>blue.</span></span></h2>
+    <p>Create your Rayon+ account and never miss a moment of Gikundiro again — on matchday or any day.</p>
+    <form class="form" id="form" novalidate>
+      <label for="email" class="sr">Email or phone number</label>
+      <input id="email" type="text" placeholder="Email or phone number" autocomplete="email">
+      <button class="pill pill--blue" type="submit" id="formBtn">Create account</button>
+    </form>
+    <p class="join__small">By joining you agree to the Terms of Use and Privacy Policy.</p>
+    <div class="stores">
+      <a href="#" class="store"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8 0 0-2.5-1-2.5-3.9zM14 5.5c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1 .1 2.1-.6 2.8-1.4z"/></svg><span><small>Download on the</small>App Store</span></a>
+      <a href="#" class="store"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.6 2.3c-.2.2-.3.6-.3 1v17.4c0 .4.1.8.3 1l9.7-9.7L3.6 2.3zm10.8 10.8 2.8 2.8-11.4 6.5 8.6-9.3zm4-1.1-3-1.7-3.1 3.1 3.1 3.1 3-1.7c.9-.5.9-1.3 0-1.8zm-13.6-10 11.4 6.5-2.8 2.8L4.8 2z"/></svg><span><small>Get it on</small>Google Play</span></a>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- Footer -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__grid">
+      <div>
+        <a href="#top" class="logo" style="font-size:32px">RAYON<b>+</b></a>
+        <p style="color:var(--steel);font-size:14px;max-width:320px;margin-top:12px">The official streaming and club-life platform of Rayon Sports FC.</p>
+      </div>
+      <div><h4>Watch</h4><ul><li><a href="#live">Live matches</a></li><li><a href="#life">Club life</a></li><li><a href="#teams">Men</a></li><li><a href="#teams">Women</a></li></ul></div>
+      <div><h4>Membership</h4><ul><li><a href="#plans">Plans</a></li><li><a href="#join">Create account</a></li><li><a href="#">Gift Rayon+</a></li><li><a href="#">Redeem code</a></li></ul></div>
+      <div><h4>Help</h4><ul><li><a href="#">Support</a></li><li><a href="#">Devices</a></li><li><a href="#">Payments</a></li><li><a href="#">Contact</a></li></ul></div>
+    </div>
+    <div class="foot__big" aria-hidden="true" data-fit="600"><span>RAYON</span><b>+</b></div>
+    <div class="foot__legal"><span>© 2026 Rayon+ · Rayon Sports FC</span><span>Kigali, Rwanda · English · Kinyarwanda</span></div>
+  </div>
+</footer>
+
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/ScrollTrigger.min.js"></script>
+<script src="vendor/lenis.min.js"></script>
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hasGsap = !!window.gsap;
+  const $ = (s, c = document) => c.querySelector(s);
+  const $$ = (s, c = document) => [...c.querySelectorAll(s)];
+
+  /* ---------- smooth scroll ---------- */
+  let lenis = null;
+  if (window.Lenis && !reduce) {
+    lenis = new Lenis({ duration: 1.15, smoothWheel: true });
+    if (hasGsap) {
+      gsap.registerPlugin(ScrollTrigger);
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add(t => lenis.raf(t * 1000));
+      gsap.ticker.lagSmoothing(0);
+    } else {
+      const raf = t => { lenis.raf(t); requestAnimationFrame(raf); };
+      requestAnimationFrame(raf);
+    }
+    lenis.stop();
+  } else if (hasGsap) gsap.registerPlugin(ScrollTrigger);
+
+  $$('a[href^="#"]').forEach(a => a.addEventListener('click', e => {
+    const id = a.getAttribute('href'); if (id.length < 2) return;
+    const t = $(id); if (!t) return;
+    e.preventDefault(); closeMenu();
+    lenis ? lenis.scrollTo(t, { offset: 0, duration: 1.6 }) : t.scrollIntoView({ behavior: 'smooth' });
+  }));
+
+  /* ---------- menu ---------- */
+  const menu = $('#menu');
+  function closeMenu(){ menu.classList.remove('is-open'); }
+  $('#burger').addEventListener('click', () => menu.classList.toggle('is-open'));
+
+  /* ---------- nav state ---------- */
+  const nav = $('#nav'); let lastY = 0;
+  const onScroll = y => {
+    const heroH = $('#hero').offsetHeight;
+    nav.classList.toggle('is-solid', y > heroH - 80);
+    nav.classList.toggle('is-hidden', y > lastY && y > 200 && !menu.classList.contains('is-open'));
+    lastY = y;
+  };
+  lenis ? lenis.on('scroll', e => onScroll(e.scroll)) : addEventListener('scroll', () => onScroll(scrollY), { passive: true });
+
+  /* ---------- cursor ---------- */
+  const cur = $('#cursor'), curLabel = $('#cursorLabel');
+  if (matchMedia('(hover:hover)').matches && hasGsap) {
+    const xTo = gsap.quickTo(cur, 'x', { duration: .45, ease: 'power3' });
+    const yTo = gsap.quickTo(cur, 'y', { duration: .45, ease: 'power3' });
+    addEventListener('mousemove', e => { xTo(e.clientX); yTo(e.clientY); });
+    $$('[data-cursor]').forEach(el => {
+      el.addEventListener('mouseenter', () => { curLabel.textContent = el.dataset.cursor; cur.classList.add('is-big'); });
+      el.addEventListener('mouseleave', () => cur.classList.remove('is-big'));
+    });
+    $$('.magnetic').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        gsap.to(el, { x: (e.clientX - r.left - r.width / 2) * .3, y: (e.clientY - r.top - r.height / 2) * .4, duration: .4, ease: 'power3' });
+      });
+      el.addEventListener('mouseleave', () => gsap.to(el, { x: 0, y: 0, duration: .7, ease: 'elastic.out(1,.4)' }));
+    });
+  }
+
+  /* ---------- lazy videos: play only when visible ---------- */
+  const io = new IntersectionObserver(entries => entries.forEach(en => {
+    const v = en.target;
+    if (en.isIntersecting) { if (v.preload === 'none') v.preload = 'auto'; v.play().catch(() => {}); }
+    else v.pause();
+  }), { rootMargin: '200px' });
+  $$('video').forEach(v => io.observe(v));
+
+  /* ---------- manifesto: split words ---------- */
+  const man = $('#manifesto');
+  (function split(node){
+    [...node.childNodes].forEach(n => {
+      if (n.nodeType === 3) {
+        const frag = document.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach(p => {
+          if (!p) return;
+          if (/^\s+$/.test(p)) frag.append(p);
+          else { const s = document.createElement('span'); s.className = 'w' + (node.classList && node.classList.contains('blue') ? ' blue' : ''); s.textContent = p; frag.append(s); }
+        });
+        n.replaceWith(frag);
+      } else if (n.nodeType === 1) {
+        if (n.classList.contains('blue')) { const s = document.createElement('span'); s.className = 'w blue'; s.textContent = n.textContent; n.replaceWith(s); }
+      }
+    });
+  })(man);
+  const words = $$('.w', man);
+
+  /* ---------- live player: chat + clock ---------- */
+  const chat = $('#chat');
+  const msgs = [['Aline','GIKUNDIRO!!'],['Eric_K','What a pass from the midfield'],['Diane','Watching from Musanze'],['Patrick','Blue forever'],['Jean.B','Keeper is on fire tonight'],['Moses','Another one please'],['Grace','Proud of this team'],['Yves','Fans are so loud tonight'],['Claude','Ni Rayon!']];
+  let mi = 0;
+  const pushMsg = () => {
+    const [u, t] = msgs[mi++ % msgs.length];
+    const d = document.createElement('div'); d.className = 'msg'; d.innerHTML = `<b>${u}</b>${t}`;
+    chat.append(d); while (chat.children.length > 4) chat.firstElementChild.remove();
+  };
+  for (let i = 0; i < 3; i++) pushMsg();
+  setInterval(pushMsg, 2200);
+  let minute = 67, viewers = 48210;
+  setInterval(() => {
+    minute = minute >= 90 ? 67 : minute + 1;
+    $('#clock').textContent = minute + "'";
+    $('#prog').style.width = (minute / 90 * 100) + '%';
+    if (minute === 78) $('#score').textContent = '2 – 0';
+    if (minute === 67) $('#score').textContent = '1 – 0';
+    viewers += Math.round((Math.random() - .3) * 140);
+    $('#viewers').textContent = viewers.toLocaleString('en-US');
+  }, 1600);
+  $$('#cams button').forEach(b => b.addEventListener('click', () => { $$('#cams button').forEach(x => x.classList.remove('is-on')); b.classList.add('is-on'); }));
+
+  /* ---------- form ---------- */
+  $('#form').addEventListener('submit', e => {
+    e.preventDefault();
+    const f = e.currentTarget, inp = $('#email');
+    if (!inp.value.trim()) { inp.focus(); inp.placeholder = 'Enter your email or phone to join'; return; }
+    f.classList.add('is-done'); $('#formBtn').textContent = 'Welcome to the blue ✓';
+    $('#formBtn').classList.replace('pill--blue', 'pill--white'); inp.value = ''; inp.placeholder = "You're in. Check your inbox.";
+  });
+
+  /* ---------- fit giant words to the container width ---------- */
+  const fit = () => $$('[data-fit]').forEach(el => {
+    el.style.fontSize = '100px';
+    const avail = el.parentElement.clientWidth - (parseFloat(getComputedStyle(el.parentElement).paddingLeft) + parseFloat(getComputedStyle(el.parentElement).paddingRight));
+    el.style.fontSize = Math.min(100 * avail / el.scrollWidth * .995, +el.dataset.fit) + 'px';
+  });
+  fit(); document.fonts && document.fonts.ready.then(() => { fit(); hasGsap && ScrollTrigger.refresh(); });
+  addEventListener('resize', fit);
+  addEventListener('load', () => { fit(); hasGsap && ScrollTrigger.refresh(); });
+
+  /* ---------- no gsap / reduced motion fallback ---------- */
+  const finishLoader = () => { $('#loader').style.display = 'none'; $('#wipe').style.display = 'none'; document.body.classList.remove('is-loading'); $$('.hero__col').forEach(c => c.style.clipPath = 'none'); words.forEach(w => w.classList.add('is-on')); lenis && lenis.start(); };
+  if (!hasGsap || reduce) { finishLoader(); return; }
+
+  /* ---------- loader ---------- */
+  const count = { v: 0 };
+  const tl = gsap.timeline();
+  tl.to(count, { v: 100, duration: 2.1, ease: 'power2.inOut', onUpdate: () => { $('#count').textContent = Math.round(count.v); $('#bar').style.width = count.v + '%'; } })
+    .to('#wipe', { yPercent: -100, duration: .9, ease: 'expo.inOut' }, '-=.15')
+    .set('#loader', { display: 'none' })
+    .to('#wipe', { yPercent: -200, duration: .9, ease: 'expo.inOut' })
+    .add(() => { document.body.classList.remove('is-loading'); lenis && lenis.start(); }, '<')
+    .to('.hero__col', { clipPath: 'inset(0% 0 0 0)', duration: 1.4, stagger: .12, ease: 'expo.out' }, '<.1')
+    .from('.hero__col video', { scale: 1.3, duration: 2, stagger: .12, ease: 'expo.out' }, '<')
+    .from('.hero__title .line>span', { yPercent: 110, duration: 1.2, ease: 'expo.out' }, '<.35')
+    .from('.hero__eyebrow .line>span', { yPercent: 110, duration: 1, ease: 'expo.out' }, '<.1')
+    .from('.hero__sub, .hero__ctas > *, .hero__tag, .scrollcue, #nav', { opacity: 0, y: 20, duration: 1, stagger: .06, ease: 'power3.out' }, '<.2');
+
+  /* ---------- hero parallax ---------- */
+  $$('.hero__col').forEach(c => gsap.to(c.querySelector('video'), { yPercent: +c.dataset.speed, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } }));
+  gsap.to('.hero__content', { yPercent: 40, opacity: .2, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
+
+  /* ---------- line reveals ---------- */
+  $$('section:not(.hero) h2.display').forEach(h => {
+    gsap.from(h.querySelectorAll('.line>span'), { yPercent: 110, duration: 1.2, stagger: .08, ease: 'expo.out', scrollTrigger: { trigger: h, start: 'top 85%' } });
+  });
+
+  /* ---------- manifesto words ---------- */
+  ScrollTrigger.create({ trigger: man, start: 'top 80%', end: 'bottom 45%', scrub: true,
+    onUpdate: s => { const n = Math.round(s.progress * words.length); words.forEach((w, i) => w.classList.toggle('is-on', i < n)); } });
+
+  /* ---------- team tiles ---------- */
+  $$('.tile').forEach((t, i) => {
+    gsap.fromTo(t.querySelector('img'), { scale: 1.25 }, { scale: 1.08, ease: 'none', scrollTrigger: { trigger: t, start: 'top bottom', end: 'bottom top', scrub: true } });
+    gsap.from(t.querySelectorAll('.tile__body > *'), { y: 40, opacity: 0, duration: 1, stagger: .08, ease: 'power3.out', scrollTrigger: { trigger: t, start: 'top 60%' } });
+  });
+
+  /* ---------- live ---------- */
+  gsap.from('.player', { clipPath: 'inset(12% 12% 12% 12%)', duration: 1.4, ease: 'expo.out', scrollTrigger: { trigger: '.player', start: 'top 80%' } });
+  gsap.from('.feat li', { y: 30, opacity: 0, duration: .9, stagger: .1, ease: 'power3.out', scrollTrigger: { trigger: '.feat', start: 'top 85%' } });
+
+  /* ---------- horizontal chapters ---------- */
+  const mm = gsap.matchMedia();
+  mm.add('(min-width: 761px)', () => {
+    const track = $('#lifeTrack');
+    const dist = () => track.scrollWidth - innerWidth;
+    const tween = gsap.to(track, { x: () => -dist(), ease: 'none',
+      scrollTrigger: { trigger: '#lifePin', start: 'top top', end: () => '+=' + dist(), pin: true, scrub: 1, invalidateOnRefresh: true,
+        onUpdate: s => $('#lifeProg').style.width = (s.progress * 100) + '%' } });
+    $$('.chapter', track).forEach(c => gsap.from(c, { rotate: 3, y: 60, opacity: .3, ease: 'none',
+      scrollTrigger: { trigger: c, containerAnimation: tween, start: 'left 100%', end: 'left 65%', scrub: true } }));
+  });
+
+  /* ---------- counters ---------- */
+  $$('[data-count]').forEach(el => {
+    const end = +el.dataset.count, from = end > 1000 ? end - 60 : 0, o = { v: from };
+    gsap.to(o, { v: end, duration: 2, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 85%' }, onUpdate: () => el.textContent = Math.round(o.v) });
+  });
+
+  /* ---------- champions + family ---------- */
+  gsap.to('#champImg', { scale: 1, ease: 'none', scrollTrigger: { trigger: '.champs', start: 'top bottom', end: 'bottom top', scrub: true } });
+  gsap.from('.champs__img', { clipPath: 'inset(0 0 100% 0)', duration: 1.4, ease: 'expo.out', scrollTrigger: { trigger: '.champs__img', start: 'top 80%' } });
+  gsap.to('#familyImg', { yPercent: 12, ease: 'none', scrollTrigger: { trigger: '.family', start: 'top bottom', end: 'bottom top', scrub: true } });
+
+  /* ---------- plans ---------- */
+  gsap.from('.plan', { y: 80, opacity: 0, duration: 1.1, stagger: .12, ease: 'expo.out', scrollTrigger: { trigger: '.plans__grid', start: 'top 80%' } });
+
+  /* ---------- join + footer ---------- */
+  gsap.from('.join .form, .join__small, .stores', { y: 30, opacity: 0, duration: 1, stagger: .1, ease: 'power3.out', scrollTrigger: { trigger: '.join .form', start: 'top 90%' } });
+  gsap.from('.foot__big > *', { yPercent: 100, duration: 1.4, stagger: .1, ease: 'expo.out', scrollTrigger: { trigger: '.foot__big', start: 'top 95%' } });
+
+
+})();
+</script>
+</body>
+</html>
